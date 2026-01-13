@@ -1,0 +1,245 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Workflow Agent UI</title>
+  <style>
+    body { font-family: system-ui; margin: 0; }
+    .layout { display: grid; grid-template-columns: 360px 1fr; height: 100vh; }
+    .sidebar { border-right: 1px solid #ddd; padding: 14px; overflow: auto; }
+    .main { padding: 18px; overflow: auto; }
+    h1 { margin: 0 0 8px; font-size: 20px; }
+    h2 { margin-top: 18px; font-size: 16px; }
+    .row { margin: 12px 0; }
+    textarea, input { width: 100%; padding: 10px; box-sizing: border-box; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    button { padding: 10px 14px; margin-right: 8px; }
+    .card { background: #f6f6f6; padding: 12px; border-radius: 10px; margin-top: 10px; }
+    pre { white-space: pre-wrap; word-break: break-word; margin: 0; }
+    .hidden { display: none; }
+    label { font-weight: 600; display: block; margin-bottom: 6px; }
+    small { color: #555; }
+    .run-item { padding: 10px; border-radius: 10px; border: 1px solid #e5e5e5; margin-bottom: 10px; cursor: pointer; }
+    .run-item:hover { background: #fafafa; }
+    .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eaeaea; font-size: 12px; margin-left: 6px; }
+    .muted { color: #666; font-size: 12px; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <div class="sidebar">
+      <h1>Run History</h1>
+      <div class="row">
+        <button onclick="refreshRuns()">Refresh</button>
+        <button onclick="clearView()">Clear view</button>
+      </div>
+      <div id="runList">(loading...)</div>
+    </div>
+
+    <div class="main">
+      <h1>AI Workflow Automation Agent</h1>
+      <small>Local Ollama + FastAPI • Run / Needs input / Continue • History panel</small>
+
+      <h2>Run new task</h2>
+      <div class="row">
+        <label>Goal</label>
+        <input id="goal" value="Summarize notes, create tasks, draft an email, and schedule a reminder">
+      </div>
+
+      <div class="row">
+        <label>Context JSON</label>
+        <textarea id="context" rows="10">{
+  "text": "Meeting notes:\n- Ship MVP in 2 weeks\n- Alex owns backend\n- Mina owns UI\n- Need Jira tickets and follow-up email",
+  "to": "team@company.com",
+  "subject": "MVP timeline follow-up",
+  "bullet_points": ["Ship MVP in 2 weeks", "Alex owns backend", "Mina owns UI"],
+  "when": "tomorrow 09:00",
+  "note": "Follow up on action items"
+}</textarea>
+      </div>
+
+      <div class="row">
+        <button onclick="runAgent()">Run</button>
+        <button onclick="resetUI()">Reset</button>
+      </div>
+
+      <div id="needsInput" class="card hidden">
+        <h2>Needs input</h2>
+        <div id="questions"></div>
+
+        <div class="row">
+          <label>Context patch JSON (edit what’s missing)</label>
+          <textarea id="patch" rows="8">{}</textarea>
+          <small>Tip: You can paste only the missing keys here.</small>
+        </div>
+
+        <div class="row">
+          <button onclick="continueAgent()">Continue</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Response</h2>
+        <pre id="out">(no response yet)</pre>
+      </div>
+
+      <div class="card">
+        <h2>Steps (debug)</h2>
+        <pre id="steps">(no steps yet)</pre>
+      </div>
+
+      <div class="card">
+        <h2>Selected Run (from history)</h2>
+        <pre id="selected">(none)</pre>
+      </div>
+    </div>
+  </div>
+
+<script>
+const API = "http://localhost:8000";
+let lastRunId = null;
+
+function safeJsonParse(txt) {
+  try { return [JSON.parse(txt), null]; }
+  catch (e) { return [null, e.message]; }
+}
+
+function show(el, yes) {
+  el.classList.toggle("hidden", !yes);
+}
+
+function resetUI() {
+  lastRunId = null;
+  document.getElementById("out").textContent = "(no response yet)";
+  document.getElementById("steps").textContent = "(no steps yet)";
+  document.getElementById("questions").innerHTML = "";
+  document.getElementById("patch").value = "{}";
+  show(document.getElementById("needsInput"), false);
+}
+
+function clearView() {
+  document.getElementById("selected").textContent = "(none)";
+}
+
+function tsToLocal(ts) {
+  if (!ts) return "";
+  const d = new Date(ts * 1000);
+  return d.toLocaleString();
+}
+
+async function refreshRuns() {
+  const listEl = document.getElementById("runList");
+  listEl.textContent = "(loading...)";
+  try {
+    const res = await fetch(API + "/runs?limit=50");
+    const data = await res.json();
+    const runs = data.runs || [];
+    if (!runs.length) {
+      listEl.textContent = "(no runs yet)";
+      return;
+    }
+    listEl.innerHTML = "";
+    runs.forEach(r => {
+      const div = document.createElement("div");
+      div.className = "run-item";
+      div.onclick = () => loadRun(r.run_id);
+
+      const status = r.status || "ok";
+      div.innerHTML = `
+        <div><b>${r.run_id}</b> <span class="pill">${status}</span></div>
+        <div class="muted">${tsToLocal(r.created_at)}</div>
+        <div style="margin-top:6px;"><small>${(r.user_goal || "").slice(0, 140)}</small></div>
+      `;
+      listEl.appendChild(div);
+    });
+  } catch (e) {
+    listEl.textContent = "Failed to load runs. Is API running?";
+  }
+}
+
+async function loadRun(runId) {
+  const out = document.getElementById("selected");
+  out.textContent = "(loading...)";
+  try {
+    const res = await fetch(API + "/runs/" + runId);
+    const data = await res.json();
+    out.textContent = JSON.stringify(data, null, 2);
+  } catch (e) {
+    out.textContent = "Failed to load run details.";
+  }
+}
+
+async function runAgent() {
+  const goal = document.getElementById("goal").value.trim();
+  const [context, err] = safeJsonParse(document.getElementById("context").value);
+
+  if (err) { alert("Context JSON invalid: " + err); return; }
+
+  const payload = { user_goal: goal, context: context };
+
+  const res = await fetch(API + "/run", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  renderResponse(data);
+  refreshRuns();
+}
+
+async function continueAgent() {
+  if (!lastRunId) { alert("No run_id available. Run first."); return; }
+
+  const [patch, err] = safeJsonParse(document.getElementById("patch").value);
+  if (err) { alert("Patch JSON invalid: " + err); return; }
+
+  const payload = { run_id: lastRunId, context_patch: patch };
+
+  const res = await fetch(API + "/continue", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  renderResponse(data);
+  refreshRuns();
+}
+
+function renderResponse(data) {
+  lastRunId = data.run_id || lastRunId;
+
+  document.getElementById("out").textContent = JSON.stringify({
+    run_id: data.run_id,
+    status: data.status,
+    final_answer: data.final_answer,
+    questions: data.questions,
+    missing_fields: data.missing_fields
+  }, null, 2);
+
+  document.getElementById("steps").textContent = JSON.stringify(data.steps, null, 2);
+
+  if (data.status === "needs_input") {
+    const qDiv = document.getElementById("questions");
+    qDiv.innerHTML = "";
+    (data.questions || []).forEach(q => {
+      const p = document.createElement("p");
+      p.textContent = "• " + q;
+      qDiv.appendChild(p);
+    });
+
+    // pre-fill patch with missing fields as keys
+    const patch = {};
+    (data.missing_fields || []).forEach(m => { patch[m.field] = ""; });
+    document.getElementById("patch").value = JSON.stringify(patch, null, 2);
+
+    show(document.getElementById("needsInput"), true);
+  } else {
+    show(document.getElementById("needsInput"), false);
+  }
+}
+
+refreshRuns();
+</script>
+</body>
+</html>

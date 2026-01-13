@@ -1,0 +1,2 @@
+MAX_STEPS = 6
+OLLAMA_MODEL = "llama3.1:8b"
