@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Workflow Agent Project Reference</title>
+  <style>
+    :root {
+      --ink: #12212d;
+      --muted: #586877;
+      --line: #d8e0e7;
+      --accent: #0f7f95;
+      --accent-soft: #e7f5f8;
+      --warm: #f08d2f;
+      --panel: #f7fafc;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: white;
+    }
+
+    .page {
+      width: 1120px;
+      margin: 0 auto;
+      padding: 28px 34px 40px;
+    }
+
+    .kicker {
+      color: var(--warm);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr;
+      gap: 28px;
+      align-items: start;
+      margin-bottom: 26px;
+    }
+
+    .title {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 38px;
+      line-height: 1.04;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 17px;
+      line-height: 1.55;
+      color: var(--muted);
+      max-width: 58ch;
+    }
+
+    .heroCard {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 20px;
+      background: linear-gradient(180deg, #fafdff, #f1f8fb);
+    }
+
+    .heroCard h3 {
+      font-size: 13px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .heroCard ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--ink);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: white;
+      padding: 18px 18px 16px;
+    }
+
+    .card h2 {
+      font-size: 14px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .card p, .card li {
+      font-size: 14px;
+      line-height: 1.62;
+      color: var(--ink);
+    }
+
+    .card ul, .card ol {
+      margin: 0;
+      padding-left: 18px;
+    }
+
+    .span-5 { grid-column: span 5; }
+    .span-7 { grid-column: span 7; }
+    .span-12 { grid-column: span 12; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin: 22px 0 24px;
+    }
+
+    .metric {
+      border-radius: 18px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 16px;
+    }
+
+    .metricValue {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .metricLabel {
+      font-size: 12px;
+      line-height: 1.5;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .stackList {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px 18px;
+    }
+
+    .stackList div {
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: var(--accent-soft);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .mono {
+      font-family: "Cascadia Code", Consolas, monospace;
+      font-size: 12px;
+      background: #f5f7f9;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      white-space: pre-wrap;
+    }
+
+    .screenshotBlock {
+      margin-top: 24px;
+      page-break-inside: avoid;
+    }
+
+    .screenshotFrame {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      background: white;
+      padding: 12px;
+    }
+
+    .screenshotFrame img {
+      width: 100%;
+      display: block;
+      border-radius: 12px;
+    }
+
+    .footer {
+      margin-top: 18px;
+      font-size: 12px;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { width: auto; margin: 0; padding: 18px 22px 24px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="kicker">Project Reference</div>
+    <section class="hero">
+      <div>
+        <h1 class="title">Workflow Agent</h1>
+        <p class="subtitle">
+          Local AI workflow automation assistant with FastAPI, Ollama, SQLite, and a simplified React frontend
+          for document summarization. Users can paste text or upload PDFs, get readable summaries, and review run history.
+        </p>
+      </div>
+      <div class="heroCard">
+        <h3>Core Outcome</h3>
+        <ul>
+          <li>Summarizes pasted text and text-based PDFs</li>
+          <li>Falls back safely when the planner returns invalid JSON</li>
+          <li>Stores run history with a health endpoint and report export</li>
+          <li>Uses local Ollama inference rather than hosted AI APIs</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="metrics">
+      <div class="metric">
+        <div class="metricValue">4</div>
+        <div class="metricLabel">Built-in workflow tools</div>
+      </div>
+      <div class="metric">
+        <div class="metricValue">PDF</div>
+        <div class="metricLabel">Upload and extract text for summaries</div>
+      </div>
+      <div class="metric">
+        <div class="metricValue">Local</div>
+        <div class="metricLabel">Ollama-first inference path</div>
+      </div>
+      <div class="metric">
+        <div class="metricValue">React</div>
+        <div class="metricLabel">Simplified end-user frontend</div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card span-7">
+        <h2>Business Problem</h2>
+        <p>
+          Many users want a lightweight local assistant that can summarize documents and orchestrate simple
+          workflow tasks without sending sensitive material to external SaaS analytics or AI platforms.
+          This project provides a private, local-first workflow agent that takes a goal plus user content,
+          plans tool calls with Ollama, and returns readable results with saved history.
+        </p>
+      </article>
+
+      <article class="card span-5">
+        <h2>Main Inputs</h2>
+        <ul>
+          <li>Natural-language goal</li>
+          <li>Pasted text content</li>
+          <li>Uploaded text-based PDF files</li>
+          <li>Optional follow-up details when required</li>
+        </ul>
+      </article>
+
+      <article class="card span-5">
+        <h2>Approach</h2>
+        <ol>
+          <li>Frontend sends pasted text or extracted PDF text to FastAPI.</li>
+          <li>Backend merges content into context and asks Ollama for a JSON tool plan.</li>
+          <li>Planner output is normalized, validated, and executed deterministically.</li>
+          <li>If planner JSON fails, summarization falls back directly to extracted text.</li>
+          <li>Run history and reports are stored in SQLite and exposed through the API.</li>
+        </ol>
+      </article>
+
+      <article class="card span-7">
+        <h2>Key AI / System Methods</h2>
+        <ul>
+          <li>Ollama-based local LLM planning with strict JSON tool-call prompts</li>
+          <li>Pydantic validation for tool arguments and missing-field clarification flow</li>
+          <li>Argument normalization and context filling for planner robustness</li>
+          <li>Direct fallback summarization for malformed planner responses</li>
+          <li>SQLite-backed persistence for runs, audit steps, and reports</li>
+        </ul>
+      </article>
+
+      <article class="card span-7">
+        <h2>Results / Output</h2>
+        <p>
+          The app produces readable summaries for uploaded or pasted content, tracks prior runs,
+          supports follow-up input when details are missing, and serves a cleaner React interface
+          for normal users. Backend health information includes configured and resolved Ollama models,
+          while the ingestion path avoids failing on common planner-formatting errors.
+        </p>
+      </article>
+
+      <article class="card span-5">
+        <h2>Technology Stack</h2>
+        <div class="stackList">
+          <div>Python, FastAPI, Uvicorn</div>
+          <div>React + Vite frontend</div>
+          <div>Ollama local inference</div>
+          <div>SQLite persistence</div>
+          <div>Pydantic validation</div>
+          <div>PDF text extraction with pypdf</div>
+        </div>
+      </article>
+
+      <article class="card span-12">
+        <h2>Key Endpoints</h2>
+        <div class="mono">GET /health
+POST /run
+POST /run-ingest
+POST /continue
+GET /runs
+GET /runs/{run_id}
+GET /runs/{run_id}/report.md
+GET /runs/{run_id}/report.html</div>
+      </article>
+    </section>
+
+    <section class="screenshotBlock">
+      <div class="kicker">Screenshot</div>
+      <div class="screenshotFrame">
+        <img src="../assets/UI_screenshot.png" alt="Workflow Agent UI screenshot">
+      </div>
+      <div class="footer">GitHub: https://github.com/JaiEnfer/workflow-automation-agent</div>
+    </section>
+  </div>
+</body>
+</html>
