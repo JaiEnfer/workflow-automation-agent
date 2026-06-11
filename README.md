@@ -1,5 +1,12 @@
 # Workflow Automation Agent
 
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-Frontend-61DAFB?logo=react&logoColor=0A0A0A)](https://react.dev/)
+[![Ollama](https://img.shields.io/badge/Ollama-Local%20LLM-111111)](https://ollama.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](#)
+[![Repo](https://img.shields.io/badge/GitHub-workflow--automation--agent-181717?logo=github)](https://github.com/JaiEnfer/workflow-automation-agent)
+
 Local AI workflow automation agent with a FastAPI backend, Ollama-powered planning, SQLite run history, and a simplified React frontend for document summarization.
 
 ## What it does
