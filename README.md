@@ -9,6 +9,10 @@
 
 Local AI workflow automation agent with a FastAPI backend, Ollama-powered planning, SQLite run history, and a simplified React frontend for document summarization.
 
+## UI Preview
+
+![Workflow Agent UI](assets/UI_screenshot.png)
+
 ## What it does
 
 - Accepts pasted text or uploaded PDFs for summarization workflows
