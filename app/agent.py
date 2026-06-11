@@ -27,6 +27,7 @@ def _execute_plan(
             "tool_result": {
                 "plan": plan,
                 "raw_output": (planner_debug or {}).get("raw_output"),
+                "resolved_model": (planner_debug or {}).get("resolved_model"),
             },
         })
 
@@ -36,7 +37,6 @@ def _execute_plan(
         raw_args = normalize_args(name, raw_args)
         raw_args = fill_from_context(name, raw_args, context or {})
 
-
         if not isinstance(name, str) or name not in TOOL_REGISTRY:
             steps.append({
                 "thought": "Planner returned an unknown tool. Skipping.",
@@ -45,7 +45,6 @@ def _execute_plan(
             })
             continue
 
-        # Validate
         steps.append({"thought": f"Validating tool args: {name}", "tool_call": call, "tool_result": None})
         clean_args, err = validate_tool_args(name, raw_args)
 
@@ -58,7 +57,7 @@ def _execute_plan(
                 return (
                     {
                         "status": "needs_input",
-                        "final_answer": "I’m missing a few details before I can continue.",
+                        "final_answer": "I'm missing a few details before I can continue.",
                         "missing_fields": missing,
                         "questions": questions,
                         "proposed_plan": plan,
@@ -69,7 +68,6 @@ def _execute_plan(
 
             continue
 
-        # Execute
         steps.append({
             "thought": f"Calling tool: {name}",
             "tool_call": {"name": name, "args": clean_args},
@@ -79,16 +77,15 @@ def _execute_plan(
         fn = TOOL_REGISTRY[name]
         try:
             steps[-1]["tool_result"] = fn(clean_args)
-        except Exception as e:
-            steps[-1]["tool_result"] = {"error": {"type": "tool_runtime_error", "message": str(e)}}
+        except Exception as exc:
+            steps[-1]["tool_result"] = {"error": {"type": "tool_runtime_error", "message": str(exc)}}
 
-    # Compile final answer
     parts: List[str] = []
-    for s in steps:
-        tc = s.get("tool_call") or {}
-        tool_name = tc.get("name")
-        if tool_name and tool_name != "planner" and s.get("tool_result") is not None:
-            parts.append(f"{tool_name}: {s['tool_result']}")
+    for step in steps:
+        tool_call = step.get("tool_call") or {}
+        tool_name = tool_call.get("name")
+        if tool_name and tool_name != "planner" and step.get("tool_result") is not None:
+            parts.append(f"{tool_name}: {step['tool_result']}")
 
     final_answer = "Done.\n\n" + "\n".join(parts) if parts else "Done."
     return {"status": "ok", "final_answer": final_answer}, steps, run_id
@@ -101,5 +98,4 @@ def run_agent(user_goal: str, context: Optional[Dict[str, Any]] = None) -> Tuple
 
 
 def continue_agent(run_id: str, user_goal: str, plan: List[Dict[str, Any]], context: Optional[Dict[str, Any]] = None) -> Tuple[Dict[str, Any], List[Dict[str, Any]], str]:
-    # Resume the given plan without replanning
     return _execute_plan(plan, user_goal, context, run_id, include_planner_step=False)

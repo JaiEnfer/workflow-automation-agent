@@ -1,0 +1,345 @@
+:root {
+  color-scheme: light;
+  font-family: "Aptos", "Segoe UI Variable", "Trebuchet MS", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  background:
+    radial-gradient(circle at top left, rgba(248, 166, 74, 0.32), transparent 28%),
+    radial-gradient(circle at 85% 12%, rgba(8, 145, 178, 0.2), transparent 24%),
+    linear-gradient(180deg, #f7f1e7 0%, #f3efe8 48%, #f8f6f1 100%);
+  color: #1e2430;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+textarea,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.simpleShell {
+  min-height: 100vh;
+}
+
+.simpleWorkspace {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 20px 40px;
+}
+
+.heroCard,
+.card {
+  backdrop-filter: blur(8px);
+  background: rgba(255, 251, 246, 0.82);
+  border: 1px solid rgba(19, 57, 75, 0.08);
+  border-radius: 28px;
+  box-shadow: 0 18px 48px rgba(34, 50, 64, 0.08);
+}
+
+.heroCard {
+  padding: 28px;
+  margin-bottom: 20px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #f08d2f;
+}
+
+.pageTitle,
+.cardHeading h3 {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: 0.01em;
+}
+
+.pageTitle {
+  font-size: clamp(1.9rem, 3vw, 2.9rem);
+  max-width: 16ch;
+}
+
+.pageCopy {
+  max-width: 60ch;
+  margin: 12px 0 0;
+  color: #596572;
+}
+
+.simpleGrid {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.card {
+  padding: 24px;
+}
+
+.simpleComposer {
+  grid-column: span 5;
+}
+
+.simpleResult {
+  grid-column: span 7;
+}
+
+.historyCard {
+  padding: 24px;
+}
+
+.cardHeading,
+.actionRow,
+.historyItemTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.cardHeading {
+  margin-bottom: 18px;
+}
+
+.fieldLabel {
+  display: block;
+  font-weight: 700;
+  margin: 14px 0 8px;
+}
+
+.textField,
+.textInput,
+.fileInput {
+  width: 100%;
+  border-radius: 18px;
+  border: 1px solid rgba(19, 57, 75, 0.14);
+  background: rgba(255, 255, 255, 0.9);
+  color: #1e2430;
+  padding: 14px 16px;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.textField:focus,
+.textInput:focus,
+.fileInput:focus {
+  outline: none;
+  border-color: #0f6d83;
+  box-shadow: 0 0 0 3px rgba(15, 109, 131, 0.14);
+}
+
+.textField {
+  resize: vertical;
+  min-height: 150px;
+}
+
+.fileInput {
+  padding: 12px 14px;
+}
+
+.fieldHelp {
+  margin: 8px 0 0;
+  color: #596572;
+  font-size: 0.92rem;
+}
+
+.uploadDivider {
+  margin: 18px 0 4px;
+  text-align: center;
+  color: #6e6b66;
+  font-weight: 700;
+}
+
+.primaryButton,
+.ghostLightButton {
+  border-radius: 999px;
+  padding: 11px 16px;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.primaryButton {
+  background: linear-gradient(135deg, #0d8aa7, #0f6d83);
+  color: #f7f6f2;
+  box-shadow: 0 10px 24px rgba(15, 109, 131, 0.25);
+}
+
+.ghostLightButton {
+  background: rgba(19, 57, 75, 0.08);
+  color: #13394b;
+}
+
+.primaryButton:hover,
+.ghostLightButton:hover {
+  transform: translateY(-1px);
+}
+
+.primaryButton:disabled,
+.ghostLightButton:disabled {
+  opacity: 0.7;
+  cursor: wait;
+  transform: none;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 7px 11px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.statusBadge.success {
+  background: rgba(33, 145, 93, 0.14);
+  color: #17643e;
+}
+
+.statusBadge.warning {
+  background: rgba(248, 166, 74, 0.18);
+  color: #8a4d00;
+}
+
+.statusBadge.neutral {
+  background: rgba(19, 57, 75, 0.1);
+  color: #13394b;
+}
+
+.answerBlock {
+  padding: 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.82);
+  min-height: 260px;
+}
+
+.answerText {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: 1.02rem;
+  color: #24313e;
+}
+
+.followUpBlock {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(19, 57, 75, 0.08);
+}
+
+.followUpBlock h4 {
+  margin: 0 0 8px;
+}
+
+.missingGrid {
+  display: grid;
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.miniField span {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.miniField small {
+  display: block;
+  margin-top: 6px;
+  color: #6e6b66;
+}
+
+.historyList {
+  display: grid;
+  gap: 14px;
+}
+
+.historyItem {
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.historyItem strong {
+  display: block;
+  margin: 8px 0 6px;
+}
+
+.historyItem p {
+  margin: 0;
+  color: #3f4b58;
+}
+
+.timestamp {
+  font-size: 0.8rem;
+  color: #6e6b66;
+}
+
+.alert {
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border-radius: 18px;
+}
+
+.alert.error {
+  background: rgba(176, 41, 64, 0.12);
+  color: #85263a;
+  border: 1px solid rgba(176, 41, 64, 0.18);
+}
+
+.emptyState {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(19, 57, 75, 0.05);
+  color: #596572;
+}
+
+@media (max-width: 980px) {
+  .simpleComposer,
+  .simpleResult {
+    grid-column: span 12;
+  }
+}
+
+@media (max-width: 720px) {
+  .simpleWorkspace {
+    padding: 18px 14px 28px;
+  }
+
+  .card,
+  .heroCard {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .cardHeading,
+  .actionRow,
+  .historyItemTop {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

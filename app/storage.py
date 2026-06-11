@@ -1,12 +1,17 @@
 import sqlite3
 import json
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
-DB_PATH = "runs.db"
+from .config import DB_PATH
+
+
+def _connect() -> sqlite3.Connection:
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    return sqlite3.connect(DB_PATH)
 
 def init_db() -> None:
-    conn = sqlite3.connect(DB_PATH)
+    conn = _connect()
     cur = conn.cursor()
 
     cur.execute("""
@@ -34,7 +39,7 @@ def save_run(
     proposed_plan: Optional[List[Dict[str, Any]]] = None,
     context: Optional[Dict[str, Any]] = None,
 ) -> None:
-    conn = sqlite3.connect(DB_PATH)
+    conn = _connect()
     cur = conn.cursor()
     cur.execute(
         "INSERT OR REPLACE INTO runs VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
@@ -53,7 +58,7 @@ def save_run(
     conn.close()
 
 def load_run(run_id: str) -> Optional[Dict[str, Any]]:
-    conn = sqlite3.connect(DB_PATH)
+    conn = _connect()
     cur = conn.cursor()
     cur.execute("SELECT run_id, user_goal, status, proposed_plan_json, context_json FROM runs WHERE run_id = ?", (run_id,))
     row = cur.fetchone()
@@ -69,8 +74,10 @@ def load_run(run_id: str) -> Optional[Dict[str, Any]]:
         "proposed_plan": json.loads(row[3]) if row[3] else None,
         "context": json.loads(row[4]) if row[4] else None,
     }
+
+
 def list_runs(limit: int = 50) -> List[Dict[str, Any]]:
-    conn = sqlite3.connect(DB_PATH)
+    conn = _connect()
     cur = conn.cursor()
     cur.execute(
         """
@@ -97,7 +104,7 @@ def list_runs(limit: int = 50) -> List[Dict[str, Any]]:
 
 
 def read_run(run_id: str) -> Optional[Dict[str, Any]]:
-    conn = sqlite3.connect(DB_PATH)
+    conn = _connect()
     cur = conn.cursor()
     cur.execute(
         """

@@ -1,8 +1,8 @@
 import json
 from typing import Any, Dict, List, Optional, Tuple
 
-from .config import MAX_STEPS
-from ollama_client import ollama_chat  # uses your root-level file
+from .config import MAX_STEPS, OLLAMA_MODEL
+from ollama_client import OllamaClientError, ollama_chat, resolve_ollama_model
 
 TOOL_SPECS = [
     {
@@ -69,6 +69,7 @@ Context JSON (may be null):
 Return ONLY the JSON array plan now.
 """.strip()
 
+
 def _extract_json(text: str) -> Any:
     """
     Best-effort extraction if the model accidentally adds text.
@@ -83,35 +84,48 @@ def _extract_json(text: str) -> Any:
         return json.loads(text[start : end + 1])
     raise ValueError("Could not find a JSON array in model output.")
 
-def plan_with_ollama(user_goal: str, context: Optional[Dict[str, Any]] = None, model: str = "llama3.1:8b") -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+
+def plan_with_ollama(
+    user_goal: str,
+    context: Optional[Dict[str, Any]] = None,
+    model: str = OLLAMA_MODEL,
+) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
     """
     Returns: (plan, debug_info)
     plan is a list of dicts: {"name":..., "args":...}
     debug_info includes raw model output for logging.
     """
     prompt = _make_prompt(user_goal, context)
-    raw = ollama_chat(prompt=prompt, model=model, system=SYSTEM)
+
+    try:
+        resolved_model = resolve_ollama_model(model)
+        raw = ollama_chat(prompt=prompt, model=resolved_model, system=SYSTEM)
+    except OllamaClientError as exc:
+        raise ValueError(str(exc)) from exc
 
     try:
         parsed = _extract_json(raw)
-    except Exception as e:
-        # One repair attempt: tell model to fix JSON only.
+    except Exception:
         repair_system = SYSTEM + "\nIf the previous output was invalid, fix it and output ONLY valid JSON."
-        raw2 = ollama_chat(prompt=f"Fix this into valid JSON array ONLY:\n\n{raw}", model=model, system=repair_system)
+        raw2 = ollama_chat(
+            prompt=f"Fix this into valid JSON array ONLY:\n\n{raw}",
+            model=resolved_model,
+            system=repair_system,
+        )
         parsed = _extract_json(raw2)
         raw = raw2
 
     if not isinstance(parsed, list):
         raise ValueError("Planner output is not a JSON array.")
 
-    # Basic validation + truncation
+    valid_tool_names = {tool["name"] for tool in TOOL_SPECS}
     plan: List[Dict[str, Any]] = []
     for item in parsed[:MAX_STEPS]:
         if not isinstance(item, dict):
             continue
         name = item.get("name")
         args = item.get("args", {})
-        if name in {t["name"] for t in TOOL_SPECS} and isinstance(args, dict):
+        if name in valid_tool_names and isinstance(args, dict):
             plan.append({"name": name, "args": args})
 
-    return plan, {"raw_output": raw, "prompt": prompt}
+    return plan, {"raw_output": raw, "prompt": prompt, "resolved_model": resolved_model}

@@ -1,165 +1,113 @@
-# AI Workflow Automation Agent (Local Ollama)
+# Workflow Automation Agent
 
-A production-style AI workflow automation agent powered by a **local Ollama LLM**.  
-The system plans tool calls as **strict JSON**, validates and executes them deterministically, supports **clarification + resume flows**, stores full **audit logs**, and provides a **web UI with run history and report export**.
+Local AI workflow automation agent with a FastAPI backend, Ollama-powered planning, SQLite run history, and a simplified React frontend for document summarization.
 
-This project demonstrates how to build **reliable, controllable LLM systems** beyond simple chatbots.
+## What it does
 
----
+- Accepts pasted text or uploaded PDFs for summarization workflows
+- Uses a local Ollama model to plan tool calls
+- Falls back to direct summarization when the model does not return valid tool JSON
+- Validates and executes supported tools
+- Pauses for missing required inputs when needed
+- Stores run history and exposes reports
+- Serves the built React frontend from FastAPI in production-style setups
 
-## Key Features
+## Stack
 
-### LLM-Based Planning (Ollama)
-- Uses a **local Ollama model** to plan actions
-- Outputs **strict JSON tool calls**
-- Planner is isolated from execution logic (safe design)
-
-### Deterministic Tool Execution
-- Tools implemented as pure Python functions
-- Arguments validated with **Pydantic**
-- Common LLM mistakes automatically normalized
-
-### Clarification & Resume Flow
-- If required inputs are missing, agent returns:
-  - `needs_input` status
-  - specific missing fields
-  - human-readable questions
-- Execution can be resumed via `/continue` without replanning
-
-### Audit Logging & Observability
-- Full step-by-step execution log
-- Planner output, tool calls, and results stored
-- SQLite backend for persistence
-
-### Report Export
-- Export any run as:
-  - Markdown (`/report.md`)
-  - HTML (`/report.html`)
-- Suitable for sharing, debugging, or compliance
-
-### Simple Web UI
-- Run new tasks
-- Answer clarification questions
-- Resume execution
-- View run history and full logs
-
----
-
-## Architecture Overview
-```text
-User / UI
-↓
-FastAPI API
-↓
-LLM Planner (Ollama)
-↓
-JSON Tool Plan
-↓
-Validation (Pydantic)
-↓
-Deterministic Tools
-↓
-SQLite Audit Log
-```
-
-Key design principle:  
-**LLM decides *what* to do — code decides *how* it’s done.**
-
----
-
-## Tech Stack
-
-- Python 3.10+
 - FastAPI
-- Ollama (local LLM)
 - SQLite
-- Pydantic
-- Minimal HTML / JavaScript frontend
+- Ollama
+- React + Vite
 
----
+## Supported tools
 
-## Setup (Windows)
+- `summarize_text`
+- `draft_email`
+- `create_tasks`
+- `schedule_reminder`
 
-### Install Ollama & pull a model
+## Backend setup
+
+1. Create or activate a virtual environment.
+2. Install Python dependencies:
+
 ```powershell
-ollama pull llama3.1:8b
-```
-Verify:
-```sh
-ollama run llama3.1:8b "Say hello"
-```
-### Clone repo & create virtual environment
-```sh
-git clone https://github.com/JaiEnfer/workflow-automation-agent.git
-cd workflow-automation-agent
-```
-```sh
-python -m venv .venv
-.\.venv\Scripts\activate
-```
-### Install dependencies
-```sh
-pip install fastapi uvicorn[standard] httpx pydantic python-dotenv
-```
-### Run the API
-```sh
-python -m uvicorn app.main:app --reload
-```
-Swagger UI: 
-```html
-htpp://localhost:8000/docs
+pip install -r requirements.txt
 ```
 
-### Run the UI
-```sh
-python -m http.server 3000
+3. Copy `.env.example` to `.env` or set environment variables directly.
+4. Make sure Ollama is running and at least one model is installed.
+5. Start the API:
+
+```powershell
+uvicorn app.main:app --reload
 ```
 
-Web UI: 
-```html
-http://localhost:3000/web/index.html
+## Frontend setup
+
+1. Install frontend dependencies:
+
+```powershell
+cd frontend
+npm install
 ```
 
-## API Endpoints
-### Core
+2. Run the frontend in development:
 
-**POST /run** — start a new workflow
+```powershell
+npm run dev
+```
 
-**POST /continue** — resume after missing inputs
+The Vite dev server proxies API requests to `http://localhost:8000` by default.
 
-### History
+## Typical use
 
-**GET /runs** — list previous runs
+1. Start the backend.
+2. Start the frontend.
+3. Open the app in the browser.
+4. Paste text or upload a text-based PDF.
+5. Click `Summarize`.
+6. Read the summary in the result panel.
 
-**GET /runs/{run_id}** — detailed run data
+## Production-style frontend serving
 
-### Reports
+Build the frontend:
 
-**GET /runs/{run_id}/report.md**
+```powershell
+cd frontend
+npm run build
+```
 
-**GET /runs/{run_id}/report.html**
+When `frontend/dist` exists, FastAPI serves the built app at `/`.
 
----
+## Useful endpoints
 
-## Why This Project
+- `GET /health`
+- `POST /run`
+- `POST /run-ingest`
+- `POST /continue`
+- `GET /runs`
+- `GET /runs/{run_id}`
+- `GET /runs/{run_id}/report.md`
+- `GET /runs/{run_id}/report.html`
 
-This project was built to demonstrate:
+## Configuration
 
-1. How to safely integrate LLMs into production systems
-2. Separation of planning and execution
-3. Robust handling of invalid or missing model outputs
-4. Observability and auditability of AI decisions
+Backend configuration is environment-driven:
 
-It reflects real-world patterns used in AI agents, workflow automation, and internal tooling.
+- `APP_TITLE`
+- `APP_VERSION`
+- `MAX_STEPS`
+- `OLLAMA_MODEL`
+- `OLLAMA_URL`
+- `OLLAMA_TIMEOUT_SECONDS`
+- `RUNS_DB_PATH`
+- `CORS_ALLOW_ORIGINS`
 
----
+If `RUNS_DB_PATH` is left empty, the app uses a writable temp-directory SQLite database by default.
 
-## Future Improvements
-1. Real integrations (Google Calendar, Jira, Slack)
-2. PDF report export
-3. Authentication & multi-user support
-4. Tool-level permissioning
-5. Async/background execution
----
+## Notes
 
-___THANK YOU___
+- The tool implementations are still local/mock workflow actions rather than real SaaS integrations.
+- PDF extraction currently works for text-based PDFs. Scanned or image-only PDFs would need OCR as a next step.
+- For true production use, the next step would be authentication, authorization, structured logging, and real external integrations.
